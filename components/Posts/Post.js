@@ -1,7 +1,9 @@
 import PropTypes from 'prop-types';
 import React, { useRef } from 'react';
+
 import styled from '@emotion/styled';
 
+// Styled components for UI elements
 const PostContainer = styled.div(() => ({
   width: '300px',
   margin: '10px',
@@ -10,19 +12,43 @@ const PostContainer = styled.div(() => ({
   overflow: 'hidden',
 }));
 
+const AuthorDetails = styled.div(() => ({
+  display: 'flex',
+  alignItems: 'center',
+  padding: '10px',
+}));
+
+const ProfileImage = styled.img(() => ({
+  width: '40px',
+  height: '40px',
+  borderRadius: '50%',
+  marginRight: '10px',
+}));
+
+const AuthorNameWrapper = styled.div(() => ({
+  display: 'flex',
+  flexDirection: 'column',
+}));
+
+const AuthorName = styled.span(() => ({
+  fontWeight: 'bold',
+}));
+
+const AuthorEmail = styled.span(() => ({
+  color: '#888',
+}));
+
 const CarouselContainer = styled.div(() => ({
   position: 'relative',
+  overflow: 'hidden',
 }));
 
 const Carousel = styled.div(() => ({
   display: 'flex',
   overflowX: 'scroll',
-  scrollbarWidth: 'none',
-  msOverflowStyle: 'none',
   '&::-webkit-scrollbar': {
     display: 'none',
   },
-  position: 'relative',
 }));
 
 const CarouselItem = styled.div(() => ({
@@ -39,14 +65,13 @@ const Image = styled.img(() => ({
 
 const Content = styled.div(() => ({
   padding: '10px',
-  '& > h2': {
-    marginBottom: '16px',
-  },
 }));
 
-const Button = styled.button(() => ({
+const PrevButton = styled.button(() => ({
   position: 'absolute',
-  bottom: 0,
+  top: '50%',
+  left: '10px',
+  transform: 'translateY(-50%)',
   backgroundColor: 'rgba(255, 255, 255, 0.5)',
   border: 'none',
   color: '#000',
@@ -55,21 +80,32 @@ const Button = styled.button(() => ({
   height: '50px',
 }));
 
-const PrevButton = styled(Button)`
-  left: 10px;
-`;
+const NextButton = styled.button(() => ({
+  position: 'absolute',
+  top: '50%',
+  right: '10px',
+  transform: 'translateY(-50%)',
+  backgroundColor: 'rgba(255, 255, 255, 0.5)',
+  border: 'none',
+  color: '#000',
+  fontSize: '20px',
+  cursor: 'pointer',
+  height: '50px',
+}));
 
-const NextButton = styled(Button)`
-  right: 10px;
-`;
+// Function to generate profile image URL based on user's name
+const generateProfileImageUrl = name => `https://api.dicebear.com/5.x/initials/svg?seed=${name}`;
 
 const Post = ({ post }) => {
+
+  // Reference to the carousel element
   const carouselRef = useRef(null);
 
+  // Event handler for scrolling to the next image
   const handleNextClick = () => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({
-        left: 50,
+        left: 300,
         behavior: 'smooth',
       });
     }
@@ -78,7 +114,7 @@ const Post = ({ post }) => {
   const handlePrevClick = () => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({
-        left: -70,
+        left: -300,
         behavior: 'smooth',
       });
     }
@@ -86,14 +122,25 @@ const Post = ({ post }) => {
 
   return (
     <PostContainer>
+      <AuthorDetails>
+        <ProfileImage src={generateProfileImageUrl(post.user.name)} alt={post.user.name} />
+        <AuthorNameWrapper>
+          <AuthorName>{post.user.name}</AuthorName>
+          <AuthorEmail>{post.user.email}</AuthorEmail>
+        </AuthorNameWrapper>
+      </AuthorDetails>
       <CarouselContainer>
         <Carousel ref={carouselRef}>
+
+         {/* Mapping through post images and rendering them as carousel items */}
           {post.images.map((image, index) => (
             <CarouselItem key={index}>
               <Image src={image.url} alt={post.title} />
             </CarouselItem>
           ))}
         </Carousel>
+        
+          {/* Previous and Next buttons for carousel navigation */}
         <PrevButton onClick={handlePrevClick}>&#10094;</PrevButton>
         <NextButton onClick={handleNextClick}>&#10095;</NextButton>
       </CarouselContainer>
@@ -105,14 +152,21 @@ const Post = ({ post }) => {
   );
 };
 
+// PropTypes for type-checking props
 Post.propTypes = {
   post: PropTypes.shape({
-    content: PropTypes.any,
-    images: PropTypes.shape({
-      map: PropTypes.func,
-    }),
-    title: PropTypes.any,
-  }),
+    title: PropTypes.string.isRequired,
+    body: PropTypes.string.isRequired,
+    user: PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      email: PropTypes.string.isRequired,
+    }).isRequired,
+    images: PropTypes.arrayOf(
+      PropTypes.shape({
+        url: PropTypes.string.isRequired,
+      })
+    ).isRequired,
+  }).isRequired,
 };
 
 export default Post;
