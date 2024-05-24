@@ -13,15 +13,20 @@ app
   .prepare()
   .then(() => {
     const server = express();
+
+    // Middleware
     server.use(morgan('tiny'));
 
+    // Routes
     server.use('/api/v1/posts', postRoutes);
     server.use('/api/v1/users', userRoutes);
 
+    // Next.js fallback handler
     server.get('*', (req, res) => {
       return handle(req, res);
     });
 
+    // Start server
     server.listen(3000, err => {
       if (err) throw err;
       console.log('> Ready on http://localhost:3000');
